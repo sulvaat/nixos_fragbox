@@ -78,6 +78,25 @@ let
     ${pkgs.grim}/bin/grim -g "$geom" - | ${pkgs.wl-clipboard}/bin/wl-copy
   '';
 
+  # Adjust the focused output's scale by ±0.25. Uses niri's JSON output list to
+  # find the focused monitor name and current scale, then applies the new value
+  # via `niri msg output`. Clamped to [0.5, 3.0].
+  scaleUp = pkgs.writeShellScript "niri-scale-up" ''
+    out=$(${pkgs.niri}/bin/niri msg --json outputs \
+      | ${pkgs.jq}/bin/jq -r 'first(.[] | select(.is_focused)) | .name')
+    sc=$(${pkgs.niri}/bin/niri msg --json outputs \
+      | ${pkgs.jq}/bin/jq -r 'first(.[] | select(.is_focused)) | [(.scale // 1.0) + 0.25, 3.0] | min')
+    ${pkgs.niri}/bin/niri msg output "$out" scale "$sc"
+  '';
+
+  scaleDown = pkgs.writeShellScript "niri-scale-down" ''
+    out=$(${pkgs.niri}/bin/niri msg --json outputs \
+      | ${pkgs.jq}/bin/jq -r 'first(.[] | select(.is_focused)) | .name')
+    sc=$(${pkgs.niri}/bin/niri msg --json outputs \
+      | ${pkgs.jq}/bin/jq -r 'first(.[] | select(.is_focused)) | [(.scale // 1.0) - 0.25, 0.5] | max')
+    ${pkgs.niri}/bin/niri msg output "$out" scale "$sc"
+  '';
+
   colors = osConfig.lib.stylix.colors.withHashtag;
   slots = [
     "base00" "base01" "base02" "base03" "base04" "base05" "base06" "base07"
@@ -86,7 +105,7 @@ let
   palette = builtins.listToAttrs (map (n: { name = n; value = colors.${n}; }) slots);
 
   # Tokens used in the template -> their concrete values at build time.
-  tokens = (map (n: "@${n}@") slots) ++ [ "@swww_init@" "@waybar_init@" "@niri_restore@" "@screenshot@" "@screenshot_clip@" "@xwayland_satellite@" "@fcitx5@" ];
+  tokens = (map (n: "@${n}@") slots) ++ [ "@swww_init@" "@waybar_init@" "@niri_restore@" "@screenshot@" "@screenshot_clip@" "@xwayland_satellite@" "@fcitx5@" "@scale_up@" "@scale_down@" ];
   values = (map (n: colors.${n}) slots) ++ [
     "${swwwInit}"
     "${waybarInit}"
@@ -97,6 +116,8 @@ let
     # The wrapped fcitx5 (bundles the Mozc addon) from the system input-method
     # module, so the daemon finds its engines.
     "${osConfig.i18n.inputMethod.package}/bin/fcitx5"
+    "${scaleUp}"
+    "${scaleDown}"
   ];
   render = builtins.replaceStrings tokens values;
 in
