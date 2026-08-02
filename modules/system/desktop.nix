@@ -2,8 +2,36 @@
 # run `frag` to start the session.
 { config, lib, pkgs, ... }:
 let
-  # Launch script: starts a full Niri Wayland session from the TTY.
+  # Launch script: splashes bloody QUAKE ASCII art then starts a Niri session.
   frag = pkgs.writeShellScriptBin "frag" ''
+    R=$'\033[1;31m'
+    D=$'\033[0;31m'
+    F=$'\033[2;31m'
+    N=$'\033[0m'
+
+    clear
+    printf "$R"
+    cat << 'QUAKE'
+
+      ██████╗ ██╗   ██╗ █████╗ ██╗  ██╗███████╗
+     ██╔═══██╗██║   ██║██╔══██╗██║ ██╔╝██╔════╝
+     ██║   ██║██║   ██║███████║█████╔╝ █████╗
+     ██║▄▄ ██║██║   ██║██╔══██║██╔═██╗ ██╔══╝
+     ╚██████╔╝╚██████╔╝██║  ██║██║  ██╗███████╗
+      ╚══▀▀═╝  ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝
+QUAKE
+    printf "$D"
+    cat << 'DRIP'
+          ▓▓            ▓▓        ▓    ▓        ▓▓
+           ▓             ▓       ▓▓    ▓▓         ▓
+           ▓▓            ▓▓            ▓
+                                       ▓▓
+DRIP
+    printf "$F"
+    echo "                     FRAG OR BE FRAGGED"
+    printf "$N\n"
+
+    sleep 1
     exec niri-session
   '';
 in
