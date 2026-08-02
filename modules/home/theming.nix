@@ -1,12 +1,10 @@
 # GTK theming (icons, cursor, dark preference).
+# GTK theme itself is handled by Stylix (stylix.polarity = "dark" in
+# modules/system/stylix.nix) — no manual theme package needed here.
 { config, pkgs, lib, ... }:
 {
   gtk = {
     enable = true;
-    theme = {
-      name = "Tokyonight-Dark";
-      package = pkgs.tokyonight-gtk-theme;
-    };
     iconTheme = {
       name = "Papirus-Dark";
       package = pkgs.papirus-icon-theme;
@@ -22,10 +20,6 @@
     gtk4.extraConfig = {
       gtk-application-prefer-dark-theme = 1;
     };
-    # Newer home-manager defaults gtk4.theme to null; keep applying the same
-    # theme as GTK2/3 so GTK4 apps stay on Tokyonight-Dark (preserves current
-    # behavior and silences the deprecation warning).
-    gtk4.theme = config.gtk.theme;
   };
 
   # Advertise a dark color-scheme through the freedesktop appearance portal
