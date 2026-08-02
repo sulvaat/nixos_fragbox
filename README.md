@@ -27,10 +27,10 @@ NixOS flake configuration for **fragbox** — an AMD-based desktop running NixOS
 └── modules/
     ├── system/
     │   ├── audio.nix           # PipeWire
-    │   ├── boot.nix            # systemd-boot, latest kernel, amdgpu early load
-    │   ├── desktop.nix         # Xorg/amdgpu, Niri, picom, XDG portals, fonts
+    │   ├── boot.nix            # systemd-boot, latest kernel, amdgpu early load, TPM workaround
+    │   ├── desktop.nix         # Niri, XDG portals, fonts, `frag` TTY launcher
     │   ├── gaming.nix          # GameMode, Proton-GE, Gamescope, LACT, MangoHud, gpu-perf
-    │   ├── hardware.nix        # OpenRazer, graphics (32-bit), Steam hardware
+    │   ├── hardware.nix        # Graphics (32-bit), Steam hardware
     │   ├── input-method.nix    # fcitx5 + Mozc (Japanese input)
     │   ├── networking.nix      # NetworkManager, firewall, Avahi, SSH
     │   ├── packages.nix        # System-wide packages
@@ -47,7 +47,7 @@ NixOS flake configuration for **fragbox** — an AMD-based desktop running NixOS
         ├── programs.nix        # Fuzzel, Ghostty, Kitty, Git, Yazi, Zoxide
         ├── services.nix        # SwayNC, swayidle, KDE Connect
         ├── shells.nix          # Fish, Bash, Starship; shell aliases
-        ├── theming.nix         # GTK theme, icons, cursor (Tokyonight-Dark / Papirus)
+        ├── theming.nix         # GTK icons, cursor (Papirus / Bibata); theme via Stylix
         ├── waybar.nix          # Waybar status bar (template substitution)
         └── waybar/
             ├── config.json     # Waybar config template
@@ -101,3 +101,48 @@ Adapted the following from the source config:
 - Generated SSH key and added to GitHub account
 - Transferred `/etc/nixos` ownership to user `sul` (standard pattern for user-managed flake configs — allows `nix flake update` and git to run without root)
 - Initialized git repo, created [sulvaat/nixos_fragbox](https://github.com/sulvaat/nixos_fragbox) on GitHub, and pushed initial commit
+
+---
+
+### 2026-08-02 — Post-migration fixes and tuning
+
+**nixpkgs breakage: `tokyonight-gtk-theme` removed**
+
+`tokyonight-gtk-theme` was removed from nixpkgs (depended on `gtk-engine-murrine`, itself removed due to GTK 2). Dropped the manual GTK theme from `modules/home/theming.nix` and let Stylix generate the GTK theme from the Tokyo City Dark base16 scheme instead. Icons (Papirus-Dark) and cursor (Bibata-Modern-Ice) are unchanged.
+
+**Ghostty theme name fix**
+
+Ghostty's bundled catppuccin theme is named `"Catppuccin Macchiato"` (capital letters, space-separated) not `"catppuccin-macchiato"`. Fixed in `modules/home/programs.nix`.
+
+**Boot hang: 3-minute TPM timeout**
+
+The motherboard exposes a TPM chip in ACPI (`MSFT0101`) but the `tpm_crb_acpi` kernel driver fails to probe it (firmware bug: ACPI memory region doesn't cover the full CRB buffer, `-EBUSY`). With no `/dev/tpm0` or `/dev/tpmrm0` ever appearing, systemd waited 90 seconds per device across two boot phases (~3 minutes total):
+
+- *initrd phase*: suppressed with `boot.initrd.systemd.tpm2.enable = false`
+- *main system phase*: `tpm2.target` unconditionally `Wants=` both TPM device nodes and sits before `sysinit.target`. Fixed by setting `systemd.targets.tpm2.enable = false` to mask the target entirely.
+
+**TTY boot + `frag` launcher**
+
+Removed LightDM (auto-enabled by `services.xserver.enable = true`) in favour of booting directly to TTY. Also removed `services.picom` (X11-only compositor) and `services.libinput` (X11 input config; Niri drives libinput directly). Running `frag` from the TTY starts a Niri Wayland session via `niri-session`.
+
+The `frag` command displays a bloody red QUAKE ASCII art splash with blood drip characters and a 1-second pause before handing off to the compositor.
+
+**Niri output scale keybinds**
+
+Added three keybinds for live output scaling on the focused monitor. Scale changes are temporary — they reset on compositor restart (intentional; default is 1.0):
+
+| Bind | Action |
+|---|---|
+| `Mod+Equal` (`=` key) | Scale up +0.25, max 3.0 |
+| `Mod+Minus` (`-` key) | Scale down −0.25, min 0.5 |
+| `Mod+Z` | Reset to 1.0 |
+
+Implemented as shell scripts in `modules/home/niri.nix` using `niri msg --json focused-output` (`.logical.scale`) and `niri msg output <name> scale <value>`.
+
+**`protonup-qt` added**
+
+Added `protonup-qt` to system packages for GUI management of GE-Proton versions. Downloads releases from GitHub into `~/.steam/root/compatibilitytools.d/`. The declarative `proton-ge-bin` in `extraCompatPackages` is kept as a baseline.
+
+**Razer utilities removed**
+
+Removed all Razer-related configuration: `hardware.openrazer.enable` from `hardware.nix`, `polychromatic` from `packages.nix`, and `"openrazer"` from the user's `extraGroups` in `users.nix`.
