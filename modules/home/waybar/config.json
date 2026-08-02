@@ -1,0 +1,93 @@
+{
+  "clock": {
+    "format": "󰅐  {:%a %d %b   %H:%M}",
+    "tooltip-format": "<tt><big>{calendar}</big></tt>"
+  },
+  "cpu": {
+    "format": "  {usage}%",
+    "interval": 5
+  },
+  "custom/swaync": {
+    "escape": true,
+    "exec": "swaync-client -swb",
+    "format": "{icon} {text}",
+    "format-icons": {
+      "dnd-inhibited-none": "󰂝",
+      "dnd-inhibited-notification": "󰂛",
+      "dnd-none": "󰂝",
+      "dnd-notification": "󰂛",
+      "inhibited-none": "󰂞",
+      "inhibited-notification": "󰨡",
+      "none": "󰂞",
+      "notification": "󰨡"
+    },
+    "on-click": "swaync-client -t -sw",
+    "on-click-right": "swaync-client -d -sw",
+    "return-type": "json",
+    "tooltip": false
+  },
+  "custom/windows": {
+    "exec": "@niri_windows@",
+    "format": "  {}",
+    "interval": 1,
+    "tooltip": false
+  },
+  "disk": {
+    "format": "  {percentage_used}%",
+    "interval": 30,
+    "path": "/"
+  },
+  "group/timebell": {
+    "orientation": "horizontal",
+    "modules": [
+      "clock",
+      "custom/swaync"
+    ]
+  },
+  "height": 30,
+  "layer": "top",
+  "margin-left": 12,
+  "margin-right": 12,
+  "margin-top": 6,
+  "memory": {
+    "format": "󰍛  {}%",
+    "interval": 5
+  },
+  "modules-center": [
+    "group/timebell"
+  ],
+  "modules-left": [
+    "niri/workspaces",
+    "custom/windows"
+  ],
+  "modules-right": [
+    "pulseaudio",
+    "memory",
+    "cpu",
+    "disk",
+    "tray"
+  ],
+  "niri/workspaces": {
+    "format": "{value}"
+  },
+  "position": "top",
+  "pulseaudio": {
+    "format": "{icon}  {volume}%",
+    "format-bluetooth": "  {volume}%",
+    "format-icons": {
+      "default": [
+        "",
+        "",
+        ""
+      ]
+    },
+    "format-muted": "  muted",
+    "on-click": "pavucontrol",
+    "scroll-step": 5
+  },
+  "spacing": 6,
+  "tray": {
+    "icon-size": 18,
+    "spacing": 8
+  }
+}

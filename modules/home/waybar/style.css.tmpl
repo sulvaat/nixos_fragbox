@@ -1,0 +1,104 @@
+* {
+  font-family: "JetBrainsMono Nerd Font", "Symbols Nerd Font Mono";
+  font-size: 14px;
+  min-height: 0;
+}
+
+/* Transparent bar so each module reads as a floating pill */
+window#waybar {
+  background: transparent;
+}
+
+/* Shared pill style */
+#workspaces,
+#custom-windows,
+#timebell,
+#pulseaudio,
+#memory,
+#cpu,
+#disk,
+#tray {
+  background: @base00@;
+  color: @base05@;
+  padding: 2px 14px;
+  margin: 4px 4px;
+  border-radius: 14px;
+}
+
+/* Center pill is a group (clock + notification bell). The group box owns the
+   pill background/rounding; the two inner modules are transparent so they read
+   as one continuous box. The group's base00 background shows through the small
+   inter-module gap, so there's no seam. */
+#timebell { padding: 0 6px; }
+#timebell #clock,
+#timebell #custom-swaync {
+  background: transparent;
+  margin: 0;
+  padding: 2px 8px;
+  border-radius: 0;
+}
+
+/* Workspaces: pill wrapper with inner buttons */
+#workspaces {
+  padding: 2px 6px;
+}
+#workspaces button {
+  padding: 0 6px;
+  margin: 2px 1px;
+  color: @base04@;
+  background: transparent;
+  border-radius: 10px;
+}
+#workspaces button.active,
+#workspaces button.focused {
+  color: @base00@;
+  background: @base0D@;
+}
+#workspaces button:hover {
+  background: @base02@;
+  color: @base07@;
+  box-shadow: inherit;
+  text-shadow: inherit;
+}
+/* Urgent: a window on this workspace wants attention. Gentle pulse across three
+   muted shades of the accent purple (darkest -> mid -> base0E), never brighter
+   than base0E itself. shade() keeps it deriving from the theme color. */
+@keyframes urgent-pulse {
+  0%   { background-color: shade(@base0E@, 0.55); }
+  50%  { background-color: shade(@base0E@, 0.78); }
+  100% { background-color: @base0E@; }
+}
+#workspaces button.urgent {
+  color: @base07@;
+  background-color: shade(@base0E@, 0.7);
+  animation: urgent-pulse 2.4s ease-in-out infinite alternate;
+}
+
+/* Accent colors per module */
+#custom-windows { color: @base0C@; }
+#clock          { color: @base04@; font-weight: bold; }
+#pulseaudio     { color: @base0D@; }
+#memory         { color: @base0B@; }
+#cpu            { color: @base0E@; }
+#disk           { color: @base09@; }
+#tray           { color: @base05@; }
+/* Notification bell (lives inside the center pill):
+   - idle: bright cyan (base0C) so it stands out against the grey clock
+   - DnD, nothing waiting: accent purple (base0E)
+   - notifications waiting: flash tokyo-midnight orange (base09) to grab the eye */
+#custom-swaync                      { color: @base0C@; }
+#custom-swaync.dnd-none,
+#custom-swaync.dnd-inhibited-none   { color: @base0E@; }
+#custom-swaync.notification,
+#custom-swaync.dnd-notification,
+#custom-swaync.inhibited-notification {
+  color: @base09@;
+  animation: notify-flash 1s ease-in-out infinite alternate;
+}
+
+/* Flash: pulse the bell between full tokyo orange and a dimmed orange so it
+   blinks for attention without changing the pill background. */
+@keyframes notify-flash {
+  0%   { color: @base09@; }
+  100% { color: shade(@base09@, 0.5); }
+}
