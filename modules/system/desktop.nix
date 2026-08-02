@@ -1,30 +1,16 @@
-# Desktop: Xorg, Niri (Wayland), portals, compositor, fonts.
+# Desktop: Niri (Wayland), portals, fonts. No display manager — boot to TTY,
+# run `frag` to start the session.
 { config, lib, pkgs, ... }:
+let
+  # Launch script: starts a full Niri Wayland session from the TTY.
+  frag = pkgs.writeShellScriptBin "frag" ''
+    exec niri-session
+  '';
+in
 {
-  # X11 windowing system (AMD).
-  services.xserver = {
-    enable = true;
-    videoDrivers = [ "amdgpu" ];
-  };
-
-  # Input devices (renamed out of services.xserver in newer nixpkgs).
-  services.libinput = {
-    enable = true;
-    mouse = {
-      middleEmulation = false;
-    };
-  };
-
   # Niri (Wayland compositor). User config lives in modules/home/niri.nix.
   programs.niri.enable = true;
   programs.dconf.enable = true;
-
-  # Compositor for X11 apps.
-  services.picom = {
-    enable = true;
-    backend = "glx";
-    fade = true;
-  };
 
   # XDG desktop portals.
   xdg.portal = {
@@ -49,4 +35,6 @@
     noto-fonts-cjk-serif
     ipafont
   ];
+
+  environment.systemPackages = [ frag ];
 }
