@@ -52,7 +52,7 @@
       font-size = 11;
 
       # --- Colors & Aesthetics ---
-      theme = "catppuccin-macchiato";
+      theme = "Catppuccin Macchiato";
 
       # --- Transparency ---
       # background-opacity = 1 is fully opaque; lower it (e.g. 0.92) to bring
