@@ -74,5 +74,6 @@
     nix-tree
     darktable
     filezilla
+    protonup-qt
   ];
 }
