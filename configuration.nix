@@ -18,6 +18,7 @@
     ./modules/system/virtualisation.nix
     ./modules/system/programs.nix
     ./modules/system/gaming.nix
+    ./modules/system/emulation.nix
     ./modules/system/packages.nix
     ./modules/system/users.nix
   ];
