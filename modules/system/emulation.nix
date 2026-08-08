@@ -43,5 +43,13 @@
     # --- Frontend ---
     pegasus-frontend  # ES-DE was removed from nixpkgs (freeimage CVEs);
                       # Pegasus is the Nix-managed alternative.
+
+    # --- Steam Controller (non-Steam use) ---
+    # sc-controller presents the Steam Controller 2026 as a standard gamepad
+    # to emulators when Steam isn't running. Needs hardware.uinput.enable
+    # (hardware.nix) and the user in the `input` group (users.nix), both done.
+    # Launch `sc-controller` before opening RetroArch / Dolphin / Pegasus.
+    sc-controller
+  ];
   ];
 }

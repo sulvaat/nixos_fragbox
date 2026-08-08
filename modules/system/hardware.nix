@@ -9,6 +9,12 @@
     enable32Bit = true;
   };
 
-  # PS5 controller support (USB).
+  # Steam hardware udev rules (Steam Controller 2015 + 2026 receiver, PS5
+  # DualSense, Nintendo Switch Pro, etc.).
   hardware.steam-hardware.enable = true;
+
+  # uinput: lets sc-controller expose the Steam Controller as a standard
+  # gamepad to emulators (RetroArch, Dolphin, Pegasus) when Steam isn't
+  # running. Also needed by any tool that creates virtual input devices.
+  hardware.uinput.enable = true;
 }
