@@ -17,4 +17,9 @@
   # gamepad to emulators (RetroArch, Dolphin, Pegasus) when Steam isn't
   # running. Also needed by any tool that creates virtual input devices.
   hardware.uinput.enable = true;
+
+  # udisks2: D-Bus daemon that lets unprivileged users mount/unmount removable
+  # media. udiskie (home/services.nix) watches udisks2 events and auto-mounts
+  # USB drives under /run/media/$USER/ on insertion.
+  services.udisks2.enable = true;
 }

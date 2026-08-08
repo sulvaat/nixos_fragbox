@@ -189,6 +189,15 @@
     events = {};
   };
 
+  # USB automounter. Watches udisks2 (system/hardware.nix) and mounts drives
+  # under /run/media/sul/ on insertion. notify = true pops a swaync toast.
+  services.udiskie = {
+    enable = true;
+    automount = true;
+    notify = true;
+    tray = "never";
+  };
+
   # KDE Connect
   services.kdeconnect = {
     enable = true;
