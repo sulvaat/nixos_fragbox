@@ -146,3 +146,18 @@ Added `protonup-qt` to system packages for GUI management of GE-Proton versions.
 **Razer utilities removed**
 
 Removed all Razer-related configuration: `hardware.openrazer.enable` from `hardware.nix`, `polychromatic` from `packages.nix`, and `"openrazer"` from the user's `extraGroups` in `users.nix`.
+
+**Emulation stack added** (`modules/system/emulation.nix`)
+
+Added a dedicated emulation module:
+
+- `dolphin-emu` — GameCube / Wii
+- `retroarch` with a broad core set: NES (nestopia + fceumm), SNES (snes9x), N64 (mupen64plus + parallel-n64), GBA/GBC/GB (mgba + gambatte), DS (melonds), PS1 (beetle-psx-hw + pcsx-rearmed), PSP (ppsspp), PS2 (pcsx2), Genesis/SMS/GG (genesis-plus-gx), Dreamcast (flycast), Saturn (beetle-saturn), arcade (fbneo + mame2003-plus), DOS (dosbox-pure)
+- `pegasus-frontend` — ES-DE was dropped from nixpkgs (freeimage CVEs); Pegasus is the replacement. Configure ROM paths on first launch.
+
+**Steam Controller 2026 support**
+
+- `hardware.steam-hardware.enable = true` — covers the 2026 Steam Controller receiver's udev rules (and PS5 DualSense, Switch Pro, etc.)
+- `hardware.uinput.enable = true` — lets `sc-controller` present the Steam Controller as a standard gamepad to emulators when Steam isn't running
+- `sc-controller` added to `emulation.nix` system packages — launch it before RetroArch / Dolphin / Pegasus for gamepad input outside Steam
+- User `sul` added to `input` group (already present for Discord evdev push-to-talk)

@@ -51,5 +51,4 @@
     # Launch `sc-controller` before opening RetroArch / Dolphin / Pegasus.
     sc-controller
   ];
-  ];
 }
