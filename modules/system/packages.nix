@@ -74,5 +74,6 @@
     darktable
     filezilla
     protonup-qt
+    wowup-cf
   ];
 }
