@@ -20,7 +20,6 @@
     lutris
     discord
     rofi
-    nitrogen
     parted
     bat
     spotify
