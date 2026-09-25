@@ -161,3 +161,30 @@ Added a dedicated emulation module:
 - `hardware.uinput.enable = true` — lets `sc-controller` present the Steam Controller as a standard gamepad to emulators when Steam isn't running
 - `sc-controller` added to `emulation.nix` system packages — launch it before RetroArch / Dolphin / Pegasus for gamepad input outside Steam
 - User `sul` added to `input` group (already present for Discord evdev push-to-talk)
+
+---
+
+### 2026-09-25 — nixpkgs updates, USB automount, WoW addons
+
+**RetroArch packaging API change**
+
+nixpkgs-unstable restructured RetroArch — `retroarch` is now a wrapper derivation and `retroarch.override { cores = ... }` no longer works. Updated `emulation.nix` to use the new API: `retroarch.withCores (cores: with cores; [...])`.
+
+**USB automounting**
+
+Plug in a USB drive and it mounts automatically under `/run/media/sul/` with a swaync toast notification on insertion.
+
+- `services.udisks2.enable = true` added to `hardware.nix` — D-Bus daemon that handles unprivileged mount/unmount
+- `services.udiskie` added to `modules/home/services.nix` — user-space watcher that calls udisks2 on device events; `notify = true` fires a swaync toast; no tray icon (Niri has no tray)
+
+**WoW addon manager**
+
+Added `wowup-cf` — the community-maintained fork of WowUp (wowup.io) with CurseForge support, continuing development after the original project shut down.
+
+**nixpkgs breakage: `nitrogen` removed**
+
+`nitrogen` was dropped from nixpkgs (depended on GTK2 via gtkmm2, itself removed). It was an X11-only wallpaper setter; `waypaper` was already present in packages and covers the same role on Wayland/Niri.
+
+**Flake inputs updated**
+
+Ran `nix flake update` — `flake.lock` bumped to latest nixpkgs-unstable and all other inputs.
