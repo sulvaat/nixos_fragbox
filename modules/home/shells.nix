@@ -19,15 +19,15 @@
       # root evaluates this git repo as root and leaves root-owned objects in
       # .git, which later breaks `nix flake update` (run as the user). Building
       # as the user keeps .git ours.
-      rb = "cd /etc/nixos && nixos-rebuild switch --flake . --sudo";
+      rb = "cd /etc/nixos && fragmode rebuild";
       # Real upgrade for a flake system: bump flake.lock (nixpkgs, home-manager,
       # stylix), THEN rebuild from it. `--upgrade` only updates the legacy nixos
       # channel, which a flake build ignores — so it never actually moved
       # packages. flake.lock is user-owned, so `nix flake update` needs no sudo.
-      rbu = "cd /etc/nixos && nix flake update && nixos-rebuild switch --flake . --sudo";
+      rbu = "cd /etc/nixos && nix flake update && fragmode rebuild";
       # Garbage cleanup: keep the 3 newest system generations, collect store
       # garbage, then refresh the boot menu so the pruned generations drop off.
-      gc = "sudo nix-env -p /nix/var/nix/profiles/system --delete-generations +3 && sudo nix-collect-garbage && sudo /run/current-system/bin/switch-to-configuration boot";
+      gc = "sudo nix-env -p /nix/var/nix/profiles/system --delete-generations +3 && sudo nix-collect-garbage && fragmode boot";
       ls = "eza --long --header --inode --sort=type --icons=auto --group-directories-first";
       cp = "xcp";
       cud = "sudo nix-channel --update";
@@ -54,9 +54,9 @@
       cat = "bat";
       v = "nvim";
       vc = "sudo nvim /etc/nixos/configuration.nix";
-      rb = "cd /etc/nixos && nixos-rebuild switch --flake . --sudo";
-      rbu = "cd /etc/nixos && nix flake update && nixos-rebuild switch --flake . --sudo";
-      gc = "sudo nix-env -p /nix/var/nix/profiles/system --delete-generations +3 && sudo nix-collect-garbage && sudo /run/current-system/bin/switch-to-configuration boot";
+      rb = "cd /etc/nixos && fragmode rebuild";
+      rbu = "cd /etc/nixos && nix flake update && fragmode rebuild";
+      gc = "sudo nix-env -p /nix/var/nix/profiles/system --delete-generations +3 && sudo nix-collect-garbage && fragmode boot";
       ls = "eza --long --header --inode --sort=type --icons=auto --group-directories-first";
       cp = "xcp";
       vh = "sudo nvim /etc/nixos/home.nix";

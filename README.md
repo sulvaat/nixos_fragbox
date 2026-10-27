@@ -24,11 +24,15 @@ NixOS flake configuration for **fragbox** — an AMD-based desktop running NixOS
 ├── home.nix                    # Home Manager entrypoint
 ├── hardware-configuration.nix  # Generated — do not edit
 ├── pano.jpg                    # Wallpaper (Stylix source image)
+├── pkgs/
+│   └── pulse8-cec.nix          # Pulse-Eight USB-CEC kernel driver, built out-of-tree
 └── modules/
     ├── system/
     │   ├── audio.nix           # PipeWire
     │   ├── boot.nix            # systemd-boot, latest kernel, amdgpu early load, TPM workaround
+    │   ├── console-mode.nix    # `console` specialisation (Steam gaming mode + HDMI-CEC), `fragmode`
     │   ├── desktop.nix         # Niri, XDG portals, fonts, `frag` TTY launcher
+    │   ├── emulation.nix       # Dolphin, RetroArch + cores, Pegasus, sc-controller
     │   ├── gaming.nix          # GameMode, Proton-GE, Gamescope, LACT, MangoHud, gpu-perf
     │   ├── hardware.nix        # Graphics (32-bit), Steam hardware
     │   ├── input-method.nix    # fcitx5 + Mozc (Japanese input)
@@ -57,15 +61,22 @@ NixOS flake configuration for **fragbox** — an AMD-based desktop running NixOS
 ## Usage
 
 ```fish
-# Rebuild after config changes
-rb     # nixos-rebuild switch --flake .#fragbox --sudo
+# Rebuild after config changes (keeps the current boot mode)
+rb     # fragmode rebuild
 
 # Update all flake inputs then rebuild
-rbu    # nix flake update && nixos-rebuild switch --flake .#fragbox --sudo
+rbu    # nix flake update && fragmode rebuild
 
 # Garbage collect (keep last 3 generations)
 gc
+
+# Boot mode
+fragmode            # show running / next-boot mode
+fragmode console    # living-room TV: autologin into Steam gaming mode, HDMI-CEC
+fragmode quakecon   # LAN mode: TTY login, `frag` starts Niri
 ```
+
+Both modes are always in the boot menu; `fragmode` only picks the default.
 
 ## Flake inputs
 
@@ -75,6 +86,7 @@ gc
 | home-manager | follows nixpkgs |
 | stylix | follows nixpkgs |
 | chaotic-nyx | `nyxpkgs-unstable` (provides `mesa-git`) |
+| jovian | follows nixpkgs (SteamOS session + cecd; used only in `console` mode) |
 
 ---
 
@@ -188,3 +200,25 @@ Added `wowup-cf` — the community-maintained fork of WowUp (wowup.io) with Curs
 **Flake inputs updated**
 
 Ran `nix flake update` — `flake.lock` bumped to latest nixpkgs-unstable and all other inputs.
+
+---
+
+### 2026-10-27 — Console mode (Steam Machine behaviour + HDMI-CEC)
+
+**Two boot modes** (`modules/system/console-mode.nix`)
+
+- **quakecon** (base system): unchanged — TTY login with password, `frag` starts Niri.
+- **console** (NixOS specialisation): autologin with no password straight into Steam's gaming mode via [Jovian-NixOS](https://github.com/Jovian-Experiments/Jovian-NixOS). Steam's *Switch to Desktop* opens Niri; quitting Niri (`Mod+Shift+E`) returns to gaming mode. The power button opens Steam's power menu.
+
+`fragmode console|quakecon` records the choice in `/var/lib/fragbox/mode`, sets the default boot entry and offers to reboot. `rb`, `rbu` and `gc` now go through `fragmode`, so rebuilding or garbage collecting keeps the chosen mode instead of resetting to the base system.
+
+Jovian's SteamOS defaults are kept except two that don't fit a desktop: the Steam Deck kernel command line (`amd_iommu=off`, `audit=0`, …) and SteamOS's USB automount rules (udiskie already handles that).
+
+**HDMI-CEC** (console mode only)
+
+AMD desktop GPUs don't wire up the HDMI CEC line, so this needs a **Pulse-Eight USB-CEC adapter** between the PC's HDMI output and the TV.
+
+- `pkgs/pulse8-cec.nix` builds the in-tree `pulse8-cec` driver out-of-tree. nixpkgs kernels leave `MEDIA_CEC_SUPPORT` off, and building one module avoids a full kernel rebuild on every kernel bump.
+- Valve's SteamOS CEC stack (via Jovian): `inputattach-cec-units` attaches the adapter, `cecd` handles CEC and feeds remote buttons to a virtual keyboard (D-pad → arrow keys, OK → Enter, Back → Esc), so the remote navigates Steam without ever acting as a game controller.
+- `/etc/cecd/config.toml`: OSD name `fragbox`, `wake_tv = true` (the TV turns on and switches to the PC when the PC wakes). Steam's HDMI-CEC setting can override this per user.
+- `pulse8-cec persistent_config=1` keeps the CEC setup in the adapter's EEPROM so it keeps answering the TV while the PC sleeps; a udev rule enables USB wakeup on the adapter so the TV can wake the PC.
