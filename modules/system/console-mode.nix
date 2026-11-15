@@ -80,6 +80,23 @@ in
       desktopSession = "niri";
     };
     jovian.hardware.has.amd.gpu = true;
+
+    # Steam's "Apply update" runs Jovian's steamos-update stub, which compares
+    # the booted system to /nix/var/nix/profiles/system. That's the base
+    # (quakecon) system, so inside this specialisation it never matches and
+    # Steam loops on "update ready, restart". Compare against our own entry.
+    nixpkgs.overlays = lib.mkAfter [
+      (final: prev: {
+        jovianPackages = prev.jovianPackages.overrideScope (jfinal: jprev: {
+          jovian-stubs = jprev.jovian-stubs.overrideAttrs (old: {
+            buildCommand = old.buildCommand + ''
+              substituteInPlace $out/bin/holo-update $out/bin/steamos-polkit-helpers/steamos-update \
+                --replace-fail /nix/var/nix/profiles/system /nix/var/nix/profiles/system/specialisation/console
+            '';
+          });
+        });
+      })
+    ];
     # Valve's Steam Deck kernel cmdline (amd_iommu=off, audit=0, ...) is tuned
     # for the Deck APU, not a desktop.
     jovian.steamos.enableDefaultCmdlineConfig = false;

@@ -222,3 +222,11 @@ AMD desktop GPUs don't wire up the HDMI CEC line, so this needs a **Pulse-Eight 
 - Valve's SteamOS CEC stack (via Jovian): `inputattach-cec-units` attaches the adapter, `cecd` handles CEC and feeds remote buttons to a virtual keyboard (D-pad → arrow keys, OK → Enter, Back → Esc), so the remote navigates Steam without ever acting as a game controller.
 - `/etc/cecd/config.toml`: OSD name `fragbox`, `wake_tv = true` (the TV turns on and switches to the PC when the PC wakes). Steam's HDMI-CEC setting can override this per user.
 - `pulse8-cec persistent_config=1` keeps the CEC setup in the adapter's EEPROM so it keeps answering the TV while the PC sleeps; a udev rule enables USB wakeup on the adapter so the TV can wake the PC.
+
+---
+
+### 2026-11-15 — Fix Steam "Apply update" restart loop in console mode
+
+On Jovian, Steam's *Apply update* doesn't download anything. It runs a stub (`steamos-update`) that only checks whether a newer NixOS system is waiting on disk. The OS is updated with `rbu`, and the Steam client keeps updating itself as usual.
+
+The stub compares the booted system with `/nix/var/nix/profiles/system`, which is the base (quakecon) system. Booted into the `console` specialisation, the two never match, so Steam reported an update forever and every restart changed nothing. `console-mode.nix` now overlays the stub to compare against `/nix/var/nix/profiles/system/specialisation/console`. Steam now offers a restart only when `rbu` has actually staged a new console system for the next boot.
